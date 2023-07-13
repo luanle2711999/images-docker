@@ -1,0 +1,82 @@
+/* NEBULA VARIABLES */
+:root {
+	--neb-bg-0: #202020;
+	--neb-bg-1: #353535;
+	--neb-bg-2: #5b5b5c;
+	--neb-textcolor: #f0f0f0;
+	--neb-highlight: #efd307;
+	--neb-failure: #ed4337;
+}
+
+/* POINTCAB SVG CLASSES */
+.cls-1 {
+	fill: #efd307;
+}
+
+.cls-2 {
+	fill: var(--neb-textcolor);
+}
+
+/* FONT UTILITY CLASSES */
+.fs-900 {
+	font-size: 5rem;
+}
+
+.fs-800 {
+	font-size: 4rem;
+}
+
+.fs-700 {
+	font-size: 3rem;
+}
+
+.fs-600 {
+	font-size: 2rem;
+}
+
+.fs-500 {
+	font-size: 1.7rem;
+}
+
+.fs-400 {
+	font-size: 1.3rem;
+}
+
+.fs-300 {
+	font-size: 1rem;
+}
+
+.fs-200 {
+	font-size: .75rem;
+}
+
+.fs-100 {
+	font-size: .5rem;
+}
+
+.fw-900 {
+	font-weight: 900;
+}
+
+.fw-700 {
+	font-weight: 700;
+}
+
+.fw-500 {
+	font-weight: 500;
+}
+
+.fw-300 {
+	font-weight: 300;
+}
+
+/* FADE TRANSITION */
+.fade-enter,
+.fade-leave-to {
+	opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity .5s;
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <!--
+    SPDX-FileCopyrightText: Lê Công Luận <lecongluan99@gmail.com>
+    SPDX-License-Identifier: CC0-1.0
+    -->
+    <id>thirdapp</id>
+    <name>Third App</name>
+    <summary>New NextCloud App</summary>
+    <description><![CDATA[New NextCloud App]]></description>
+    <version>0.0.1</version>
+    <licence>agpl</licence>
+    <author mail="lecongluan99@gmail.com" homepage="https://docs.gitlab.com/ee/user/project/integrations/custom_issue_tracker.html">Lê Công Luận</author>
+    <namespace>ThirdApp</namespace>
+    <category>tools</category>
+    <bugs>http://localhost</bugs>
+    <dependencies>
+        <nextcloud min-version="24" max-version="24"/>
+    </dependencies>
+    <navigations>
+        <navigation>
+            <name>Third App</name>
+            <route>thirdapp.page.index</route>
+        </navigation>
+    </navigations>
+</info>
