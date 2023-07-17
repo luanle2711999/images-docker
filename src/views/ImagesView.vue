@@ -7,7 +7,7 @@
       >
         <div class="swiper-wrapper">
           <div class="swiper-slide">
-            <img :src="actualImg" />
+            <img :src="actualImg" class="image-show" />
           </div>
         </div>
         <div class="swiper-button-next"></div>
@@ -96,7 +96,7 @@ export default {
       });
     },
     async getAllImages() {
-      axios
+      await axios
         .get("/apps/thirdapp/file/index")
         .then((response) => {
           const urls = response.data.map((item, index) => {
@@ -120,8 +120,8 @@ export default {
       return;
     },
 
-    getActualImg(fileId) {
-      axios
+    async getActualImg(fileId) {
+      await axios
         .get("/apps/thirdapp/file/getImageByFileId", {
           params: {
             fileId: fileId,
@@ -165,11 +165,20 @@ export default {
       slidesPerView: 4,
       freeMode: true,
       watchSlidesProgress: true,
+      pagination: {
+        el: ".swiper-pagination",
+      },
+      mousewheel: true,
+      keyboard: true,
     });
 
     this.swiper2 = new Swiper(".mySwiper2", {
       loop: true,
       spaceBetween: 10,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
       navigation: {
         nextEl: ".swiper-button-next",
         prevEl: ".swiper-button-prev",
