@@ -1,71 +1,56 @@
 <?php
 declare(strict_types=1);
-namespace OCA\SNextCloud\Service;
+namespace OCA\ThirdApp\Service;
 
-use ErrorException;
-use Imagick;
+use OCP\AppFramework\Http\JSONResponse;
+use OCP\Files\File;
+use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
-use OCP\Files\IAppData;
+use OCP\IURLGenerator;
+use OCP\IUserSession;
 class FileService {
 
-    private IRootFolder $storage;
-    private IAppData $appData;
-    public function __construct(IRootFolder $storage, IAppData $appData){
-        $this->storage = $storage;
-        $this->appData = $appData;
+ 
+    private IURLGenerator $urlGenerator;
+    private IUserSession $userSession;
+    private IRootFolder $rootFolder;
+    public function __construct(IURLGenerator $urlGenerator, IUserSession $userSession, IRootFolder $rootFolder){
+        $this->urlGenerator = $urlGenerator;
+        $this->userSession = $userSession;
+        $this->rootFolder = $rootFolder;
     }
 
-    public function getFileContent($id) {
+    public function getImageFromFolder(Folder $folder)
+	{
+	  $res = [];
+	  $items = $folder->getDirectoryListing();
+	  
+	  foreach ($items as $item) {
+		if ($item instanceof File && $item->getMimePart() == 'image') {;
+		  $thumbnailUrl = $this->urlGenerator->linkToRoute('core.Preview.getPreviewByFileId', ['x' => 480, 'y' => 180, 'fileId' => $item->getId()]);
+		  $res[] = [
+			"thumbnailUrl" => $thumbnailUrl,
+			"exif" => exif_read_data($item->fopen('r+')),
+			"fileId" => $item->getId()
+		  ];
+		}
+  
+		if ($item instanceof Folder) {
+		  $res = array_merge($res, $this->getImageFromFolder($item));
+		}
+	  }
+	  return $res;
+	}
 
-        $userFolder = $this->storage->getUserFolder('luanlc');
+    public function getImageByFileId(int $fileId){
+		$currentUser = $this->userSession->getUser();
+		$userFolder = $this->rootFolder->getUserFolder($currentUser->getUID()); // OC\Files\Node\Folder
+		$files = $userFolder->getById((int)$fileId);
+		$first = $files[0]->getPath();
 
-        // check if file exists and read from it if possible
-        try {
-            $file = $userFolder->getById($id);
-            if ($file instanceof \OCP\Files\File) {
-                return $file->getContent();
-            } else {
-                throw new ErrorException('Can not read from folder');
-            }
-        } catch(\OCP\Files\NotFoundException $e) {
-            throw new ErrorException('File does not exist');
-        }
-    }
-    public function readFileContent($userId){
-        // $user = $this->storage->getDirectoryListing();
-        $appData = $this->appData->getDirectoryListing();
-        return $appData;
-        // $image = new Imagick( 
-        //     // 'https://media.geeksforgeeks.org/wp-content/uploads/20200123100652/geeksforgeeks12.jpg'
-        //     // 'http://localhost:8080/remote.php/dav/files/luanlc/Photos/Toucan.jpg'
-        //     // 'http://localhost:8080/core/preview?fileId=36&x=1920&y=1080&a=true'
-        //     'https://www.shutterstock.com/image-photo/mountains-under-mist-morning-amazing-260nw-1725825019.jpg'
-        // ); 
-        //     // Add comment to the image  
-        //     $image->commentImage("GeeksforGeeks"); 
-              
-        //     // Save the file to local image
-        //     $image->writeImage('abc.jpg');
-              
-        //     // Open a the same file
-        //     $fp = fopen('./abc.jpg', 'rb');
-              
-        //     // Read the exif headers
-        //     $headers = exif_read_data($fp, 'COMMENT', true, true);
-              
-        //     // // Print the headers
-        //     // echo 'EXIF Headers:' . '<br>';
-              
-        //     // print("<pre>".print_r($headers['COMMENT'], true)."</pre>");
+		$userPath = $userFolder->getPath();
+		$return = [$userPath, $first];
+		return new JSONResponse($return);
 
-        //     return $headers;
-
-        // $url = 'https://media.geeksforgeeks.org/wp-content/uploads/20200123100652/geeksforgeeks12.jpg';
-        // $image = file_get_contents($url);
-        // $img = new Imagick();
-
-        // $img -> readImageBlob($image);
-
-        // return $img;
-    }
+	}
 }

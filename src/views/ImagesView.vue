@@ -6,8 +6,8 @@
         class="swiper mySwiper2"
       >
         <div class="swiper-wrapper">
-          <div class="swiper-slide" v-for="item in images" :key="item.key">
-            <img :src="item.path" :alt="item.key" />
+          <div class="swiper-slide">
+            <img :src="actualImg" />
           </div>
         </div>
         <div class="swiper-button-next"></div>
@@ -23,7 +23,7 @@
             ]"
             :id="item.key"
             :key="item.key"
-            @click="() => changeSlide(index, item.key)"
+            @click="() => changeSlide(index, item.key, item.fileId)"
           >
             <img :src="item.path" :alt="item.key" />
           </div>
@@ -47,9 +47,8 @@ import {
   BCardText,
   BButton,
 } from "@nextcloud/vue";
-import { createClient } from "webdav";
 import { generateRemoteUrl } from "@nextcloud/router";
-import { getCurrentUser, getRequestToken } from "@nextcloud/auth";
+import { getCurrentUser } from "@nextcloud/auth";
 import "swiper/css/thumbs";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
@@ -57,6 +56,7 @@ import "swiper/css";
 import "@nextcloud/dialogs/styles/toast.scss";
 import "./style.css";
 import { Swiper } from "swiper";
+import axios from "axios";
 
 export default {
   name: "App",
@@ -85,43 +85,63 @@ export default {
       swiper2: null,
       styleSlide: null,
       selectedKey: null,
+      actualImg: "",
     };
   },
 
   methods: {
+    sortImg(images) {
+      images.sort((a, b) => {
+        return new Date(b.dateTaken) - new Date(a.dateTaken);
+      });
+    },
     async getAllImages() {
-      const client = createClient(generateRemoteUrl("dav"), {
-        headers: { Requesttoken: getRequestToken() },
-      });
-      debugger;
-      const response = await client.getDirectoryContents(
-        `/files/${getCurrentUser()?.uid}/Photos`,
-        {
-          data: `<?xml version="1.0"?>
-				  <d:propfind  xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
-					<d:prop>
-					  <d:getcontenttype />
-					  <d:getlastmodified />
-					  <oc:owner-id />
-					  <oc:size />
-					</d:prop>
-				  </d:propfind>`,
-        }
-      );
-      console.log(response);
-      const urls = response.map((item) => {
-        return {
-          path: `${generateRemoteUrl("dav")}/${item.filename}`,
-          key: item.basename,
-        };
-      });
-      urls.shift();
-      this.images = [...urls];
+      axios
+        .get("/apps/thirdapp/file/index")
+        .then((response) => {
+          const urls = response.data.map((item, index) => {
+            return {
+              path: item.thumbnailUrl,
+              key: index,
+              fileId: item?.fileId,
+              dateTaken: item.exif.DateTimeOriginal
+                ? item.exif.DateTimeOriginal
+                : "",
+            };
+          });
+          this.sortImg(urls);
+          this.getActualImg(urls[0].fileId);
+          this.images = [...urls];
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {});
       return;
     },
 
-    changeSlide(index, key) {
-      this.swiper2.slideTo(index);
+    getActualImg(fileId) {
+      axios
+        .get("/apps/thirdapp/file/getImageByFileId", {
+          params: {
+            fileId: fileId,
+          },
+        })
+        .then((response) => {
+          const filePath = response.data[1].replace(response.data[0], "");
+          this.actualImg = `${generateRemoteUrl("dav")}/files/${
+            getCurrentUser()?.uid
+          }/${filePath}`;
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {});
+    },
+
+    changeSlide(index, key, fileId) {
+      // this.swiper2.slideTo(index);
+      this.getActualImg(fileId);
       this.selectedKey = key;
     },
     updateSwipers() {
@@ -133,7 +153,6 @@ export default {
   async mounted() {
     this.loading = false;
     this.getAllImages().then(() => {
-      console.log("getAllImages");
       this.$nextTick(() => {
         console.log(document.querySelectorAll(".swiper-slide"));
         this.updateSwipers();

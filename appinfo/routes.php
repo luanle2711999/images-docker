@@ -14,7 +14,7 @@ declare(strict_types=1);
 return [
 	'resources' => [
 		'note' => ['url' => '/notes'],
-		'note_api' => ['url' => '/api/0.1/notes']
+		'note_api' => ['url' => '/api/0.1/notes'],
 	],
 	'routes' => [
 		['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
@@ -25,5 +25,7 @@ return [
 		['name' => 'file#readFile', 'url' => '/file/readFile', 'verb' => 'GET'],
 		['name' => 'thumbnail#get', 'url' => '/thumbnail/get', 'verb' => 'GET'],
 		['name' => 'file#getTestFile', 'url' => '/file/getTestFile', 'verb' => 'GET'],
+		['name' => 'file#index', 'url' => '/file/index', 'verb' => 'GET'],
+		['name' => 'file#getImageByFileId', 'url' => '/file/getImageByFileId', 'verb' => 'GET'],
 	]
 ];

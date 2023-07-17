@@ -53,6 +53,7 @@ class PageController extends Controller {
 			// add image src for logos
 			$csp->addAllowedImageDomain('*');
 
+			$csp->addAllowedFrameDomain('http://localhost:8080');
 			$response->setContentSecurityPolicy($csp);
 		}
 	}
