@@ -10,8 +10,18 @@
             <img :src="actualImg" class="image-show" />
           </div>
         </div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
+        <div
+          class="swiper-button-prev"
+          @click="() => changeSlide(selectedKey - 1, selectedKey - 1, 'prev')"
+        >
+          Previous
+        </div>
+        <div
+          class="swiper-button-next"
+          @click="() => changeSlide(selectedKey + 1, selectedKey + 1, 'next')"
+        >
+          Next
+        </div>
       </div>
       <div thumbsSlider="" class="swiper mySwiper">
         <div class="swiper-wrapper">
@@ -140,9 +150,21 @@ export default {
     },
 
     changeSlide(index, key, fileId) {
+      if (isNaN(fileId)) {
+        this.images.find((item) => {
+          if (item.key === key) {
+            fileId === "next"
+              ? (this.selectedKey += 1)
+              : (this.selectedKey -= 1);
+            this.swiper.slideTo(key);
+            this.getActualImg(item.fileId);
+          }
+        });
+      } else {
+        this.getActualImg(fileId);
+        this.selectedKey = key;
+      }
       // this.swiper2.slideTo(index);
-      this.getActualImg(fileId);
-      this.selectedKey = key;
     },
     updateSwipers() {
       this.swiper2.update();
