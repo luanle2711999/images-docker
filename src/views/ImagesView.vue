@@ -14,13 +14,13 @@
           class="swiper-button-prev"
           @click="() => changeSlide(selectedKey - 1, selectedKey - 1, 'prev')"
         >
-          Previous
+          <a href="#" class="previous round">&#8249;</a>
         </div>
         <div
           class="swiper-button-next"
           @click="() => changeSlide(selectedKey + 1, selectedKey + 1, 'next')"
         >
-          Next
+          <a href="#" class="next round">&#8250;</a>
         </div>
       </div>
       <div thumbsSlider="" class="swiper mySwiper">
@@ -290,5 +290,29 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+a {
+  text-decoration: none;
+  display: inline-block;
+  padding: 8px 16px;
+}
+
+a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+
+.next {
+  background-color: #f1f1f1;
+  color: black;
+}
+
+.round {
+  border-radius: 50%;
 }
 </style>
