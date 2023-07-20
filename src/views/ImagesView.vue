@@ -1,5 +1,5 @@
 <template>
-  <AppContent>
+  <NcAppContent>
     <div>
       <div
         style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff"
@@ -40,23 +40,13 @@
         </div>
       </div>
     </div>
-  </AppContent>
+  </NcAppContent>
 </template>
 
 <script>
-import ActionButton from "@nextcloud/vue/dist/Components/ActionButton";
-import AppContent from "@nextcloud/vue/dist/Components/AppContent";
-import AppNavigation from "@nextcloud/vue/dist/Components/AppNavigation";
-import AppNavigationItem from "@nextcloud/vue/dist/Components/AppNavigationItem";
-import AppNavigationNew from "@nextcloud/vue/dist/Components/AppNavigationNew";
+import NcAppContent from "@nextcloud/vue/dist/Components/NcAppContent";
 import { BCarouselSlide, BCarousel, BCard } from "bootstrap-vue";
-import {
-  NcModal,
-  NcButton,
-  NcTextField,
-  BCardText,
-  BButton,
-} from "@nextcloud/vue";
+import { NcModal, NcButton, NcTextField } from "@nextcloud/vue";
 import { generateRemoteUrl } from "@nextcloud/router";
 import { getCurrentUser } from "@nextcloud/auth";
 import "swiper/css/thumbs";
@@ -71,19 +61,14 @@ import axios from "axios";
 export default {
   name: "App",
   components: {
-    ActionButton,
-    AppContent,
-    AppNavigation,
-    AppNavigationItem,
-    AppNavigationNew,
+    NcAppContent,
+
     NcModal,
     NcButton,
     NcTextField,
     BCarouselSlide,
     BCarousel,
     BCard,
-    BCardText,
-    BButton,
   },
   data() {
     return {

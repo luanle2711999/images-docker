@@ -1,18 +1,10 @@
 <template>
   <div id="content" class="app-snextcloud">
-    <AppNavigation>
-      <!-- <AppNavigationNew
-		  v-if="!loading"
-		  :text="t('snextcloud', 'Files')"
-		  :disabled="false"
-		  button-id="new-snextcloud-button"
-		  button-class="icon-add"
-		  @click="openModal"
-		/> -->
+    <NcAppNavigation>
       <input type="file" id="actual-btn" class="upload" />
       <button @click="uploadFile">upload</button>
-    </AppNavigation>
-    <AppContent>
+    </NcAppNavigation>
+    <NcAppContent>
       <div class="content_container">
         <div
           v-for="note in files"
@@ -45,7 +37,7 @@
           </div>
         </div>
       </div>
-    </AppContent>
+    </NcAppContent>
     <NcModal v-if="visible" @close="closeModal" name="Name inside modal">
       <div class="modal__content">
         <h2>Please enter your name</h2>
@@ -64,11 +56,8 @@
 </template>
 
 <script>
-import ActionButton from "@nextcloud/vue/dist/Components/ActionButton";
-import AppContent from "@nextcloud/vue/dist/Components/AppContent";
-import AppNavigation from "@nextcloud/vue/dist/Components/AppNavigation";
-import AppNavigationItem from "@nextcloud/vue/dist/Components/AppNavigationItem";
-import AppNavigationNew from "@nextcloud/vue/dist/Components/AppNavigationNew";
+import NcAppContent from "@nextcloud/vue/dist/Components/NcAppContent";
+import NcAppNavigation from "@nextcloud/vue/dist/Components/NcAppNavigation";
 import { NcModal, NcButton, NcTextField } from "@nextcloud/vue";
 import { createClient, AuthType } from "webdav";
 import { generateRemoteUrl } from "@nextcloud/router";
@@ -79,11 +68,8 @@ import "@nextcloud/dialogs/styles/toast.scss";
 export default {
   name: "App",
   components: {
-    ActionButton,
-    AppContent,
-    AppNavigation,
-    AppNavigationItem,
-    AppNavigationNew,
+    NcAppContent,
+    NcAppNavigation,
     NcModal,
     NcButton,
     NcTextField,
