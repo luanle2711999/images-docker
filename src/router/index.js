@@ -16,7 +16,7 @@ const routes = [
     component: ImagesView,
   },
   {
-    path: "*",
+    path: "/*",
     name: "ListingFolder",
     component: ListingFolder,
   },
