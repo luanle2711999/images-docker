@@ -20,25 +20,28 @@ class FileService {
         $this->rootFolder = $rootFolder;
     }
 
-    public function getImageFromFolder(Folder $folder)
+    public function getImageFromFolder(Folder $folder, int $fileId, string $user)
 	{
 	  $res = [];
-	  $items = $folder->getDirectoryListing();
+	  $targetFolder = ($folder->getById($fileId))[0]; 
+	  if($targetFolder instanceof Folder) {
+		  $items = $targetFolder->getDirectoryListing();
+		  foreach ($items as $item) {
+			if ($item instanceof File && $item->getMimePart() == 'image' ) {
+			  $thumbnailUrl = $this->urlGenerator->linkToRoute('core.Preview.getPreviewByFileId', ['x' => 480, 'y' => 180, 'fileId' => $item->getId()]);
+			  $res[] = [
+				"thumbnailUrl" => $thumbnailUrl,
+				"exif" => exif_read_data($item->fopen('r+')),
+				"fileId" => $item->getId()
+			  ];
+			}
 	  
-	  foreach ($items as $item) {
-		if ($item instanceof File && $item->getMimePart() == 'image') {;
-		  $thumbnailUrl = $this->urlGenerator->linkToRoute('core.Preview.getPreviewByFileId', ['x' => 480, 'y' => 180, 'fileId' => $item->getId()]);
-		  $res[] = [
-			"thumbnailUrl" => $thumbnailUrl,
-			"exif" => exif_read_data($item->fopen('r+')),
-			"fileId" => $item->getId()
-		  ];
-		}
-  
-		if ($item instanceof Folder) {
-		  $res = array_merge($res, $this->getImageFromFolder($item));
-		}
-	  }
+			// if ($item instanceof Folder) {
+			//   $res = array_merge($res, $this->getImageFromFolder($item, $fileId, $user));
+			// }
+		  }
+	}
+
 	  return $res;
 	}
 

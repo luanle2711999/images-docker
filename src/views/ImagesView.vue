@@ -83,7 +83,7 @@ export default {
       actualImg: "",
     };
   },
-
+  props: ["fileId"],
   methods: {
     sortImg(images) {
       images.sort((a, b) => {
@@ -92,7 +92,11 @@ export default {
     },
     async getAllImages() {
       await axios
-        .get("/apps/thirdapp/file/index")
+        .get("/apps/thirdapp/file/index", {
+          params: {
+            fileId: this.fileId,
+          },
+        })
         .then((response) => {
           const urls = response.data.map((item, index) => {
             return {

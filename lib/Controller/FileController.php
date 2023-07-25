@@ -33,9 +33,9 @@ class FileController extends Controller {
 	/**
      * @NoCSRFRequired
      */
-	public function index()
+	public function index( int $fileId)
 	{
-	  $res = $this->service->getImageFromFolder($this->iRootFolder->getUserFolder($this->userId));
+	  $res = $this->service->getImageFromFolder($this->iRootFolder->getUserFolder($this->userId), $fileId, $this->userId);
 
 	  return new DataResponse($res);
 	
