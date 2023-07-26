@@ -42,10 +42,11 @@
           class="table table-hover"
           @row-clicked="onRowClicked"
         >
-          <template #cell(basename)="data">
+          <template #cell(basename)="data" class="text-info">
             <!-- <div v-if="data.type === 'directory'">
                   <b-icon icon="info-circle-fill">{{ data.value }}</b-icon>
                 </div> -->
+
             <div v-if="data.item.type === 'directory'">
               <b-icon icon="folder2"></b-icon>
               <span>{{ data.item.basename }}</span>
@@ -55,6 +56,11 @@
               <span>{{ data.item.basename }}</span>
             </div>
           </template>
+          <template #cell(size)="data">
+            <span class="text-info"
+              >{{ Math.round(data?.item?.props?.size / 1000) }} KB</span
+            >
+          </template>
         </b-table>
         <button @click="showImges()" v-if="checkFolderIncludeImg(directories)">
           Live show
@@ -62,7 +68,12 @@
       </div>
     </NcAppContent>
   </div>
-  <ImagesView :file-id="this.fileId" v-else />
+  <ImagesView
+    :file-id="this.fileId"
+    :folder-name="this.folderName"
+    v-on:goBackward="goBackward"
+    v-else
+  />
 </template>
 
 <script>
@@ -95,6 +106,7 @@ export default {
     return {
       check: false,
       fileId: 0,
+      folderName: "",
       directories: [],
       files: [],
       folderName: "",
@@ -126,11 +138,10 @@ export default {
       this.check = true;
     },
     async onRowClicked(item, index, event) {
-      console.log({ item });
       this.fileId = item.props.fileid;
+      this.folderName = item.basename;
       this.currentPath += "/" + item.basename;
       this.forwardPath = this.currentPath;
-      const pathArr = this.currentPath.split("/");
       this.paths.push({
         text: item.basename,
         href: "",
@@ -156,6 +167,10 @@ export default {
       } else {
         await this.getFolders("");
       }
+    },
+
+    goBackward() {
+      this.check = false;
     },
     async goForward() {
       if (this.forwardPath) {

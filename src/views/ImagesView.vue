@@ -1,54 +1,71 @@
 <template>
-  <NcAppContent>
-    <div>
-      <div
-        style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff"
-        class="swiper mySwiper2"
-      >
-        <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <img :src="actualImg" class="image-show" />
+  <div id="content" class="app-snextcloud">
+    <NcAppNavigation>
+      <button @click="$emit('goBackward')">Back</button>
+      <FolderTreeList
+        :dataSource="dataSoureSidebar"
+        test="dsfksdhfkjds"
+        v-on:queryImgesAfterFetch="queryImgesAfterFetch"
+      />
+    </NcAppNavigation>
+    <NcAppContent>
+      <div>
+        <div
+          style="
+            --swiper-navigation-color: #fff;
+            --swiper-pagination-color: #fff;
+          "
+          class="swiper mySwiper2"
+        >
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <img :src="actualImg" class="image-show" />
+            </div>
           </div>
-        </div>
-        <div
-          class="swiper-button-prev"
-          @click="() => changeSlide(selectedKey - 1, selectedKey - 1, 'prev')"
-        >
-          <a href="#" class="previous round">&#8249;</a>
-        </div>
-        <div
-          class="swiper-button-next"
-          @click="() => changeSlide(selectedKey + 1, selectedKey + 1, 'next')"
-        >
-          <a href="#" class="next round">&#8250;</a>
-        </div>
-      </div>
-      <div thumbsSlider="" class="swiper mySwiper">
-        <div class="swiper-wrapper">
           <div
-            v-for="(item, index) in images"
-            :class="[
-              'swiper-slide',
-              { 'swiper-slide-thumb-active': item.key === selectedKey },
-            ]"
-            :id="item.key"
-            :key="item.key"
-            @click="() => changeSlide(index, item.key, item.fileId)"
+            class="swiper-button-prev"
+            @click="() => changeSlide(selectedKey - 1, selectedKey - 1, 'prev')"
           >
-            <img :src="item.path" :alt="item.key" />
+            <a href="#" class="previous round">&#8249;</a>
+          </div>
+          <div
+            class="swiper-button-next"
+            @click="() => changeSlide(selectedKey + 1, selectedKey + 1, 'next')"
+          >
+            <a href="#" class="next round">&#8250;</a>
+          </div>
+        </div>
+        <div thumbsSlider="" class="swiper mySwiper">
+          <div class="swiper-wrapper">
+            <div
+              v-for="(item, index) in images"
+              :class="[
+                'swiper-slide',
+                { 'swiper-slide-thumb-active': item.key === selectedKey },
+              ]"
+              :id="item.key"
+              :key="item.key"
+              @click="() => changeSlide(index, item.key, item.fileId)"
+            >
+              <img :src="item.path" :alt="item.key" />
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </NcAppContent>
+    </NcAppContent>
+  </div>
 </template>
 
 <script>
 import NcAppContent from "@nextcloud/vue/dist/Components/NcAppContent";
+import NcAppNavigation from "@nextcloud/vue/dist/Components/NcAppNavigation";
 import { BCarouselSlide, BCarousel, BCard } from "bootstrap-vue";
 import { NcModal, NcButton, NcTextField } from "@nextcloud/vue";
 import { generateRemoteUrl } from "@nextcloud/router";
+import FolderTreeList from "./ViewTreeList/FolderTreeList.vue";
 import { getCurrentUser } from "@nextcloud/auth";
+import { VueTreeList, Tree, TreeNode } from "vue-tree-list";
+import { groupBy } from "lodash";
 import "swiper/css/thumbs";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
@@ -62,16 +79,18 @@ export default {
   name: "App",
   components: {
     NcAppContent,
-
+    NcAppNavigation,
     NcModal,
     NcButton,
     NcTextField,
     BCarouselSlide,
     BCarousel,
     BCard,
+    FolderTreeList,
   },
   data() {
     return {
+      dataSoureSidebar: [],
       images: [],
       updating: false,
       loading: true,
@@ -83,7 +102,7 @@ export default {
       actualImg: "",
     };
   },
-  props: ["fileId"],
+  props: ["fileId", "folderName"],
   methods: {
     sortImg(images) {
       images.sort((a, b) => {
@@ -97,7 +116,7 @@ export default {
             fileId: this.fileId,
           },
         })
-        .then((response) => {
+        .then(async (response) => {
           const urls = response.data.map((item, index) => {
             return {
               path: item.thumbnailUrl,
@@ -108,15 +127,170 @@ export default {
                 : "",
             };
           });
+          const dataSourceSidebar = this.getDataSidebar(response.data);
+          this.dataSoureSidebar = [...dataSourceSidebar];
           this.sortImg(urls);
-          this.getActualImg(urls[0].fileId);
+          await this.getActualImg(urls[0].fileId);
           this.images = [...urls];
+          // this.swiper.slideTo(urls[0].key);
+          // this.swiper2.slideTo(urls[0].key);
+          // this.updateSwipers();
+          localStorage.setItem("allImages", JSON.stringify(this.images));
         })
         .catch((error) => {
           console.log(error);
         })
         .finally(() => {});
       return;
+    },
+
+    getYearTaken(date) {
+      return new Date(date?.split(" ")[0].split(":").join("-")).getFullYear();
+    },
+    getMonthTaken(date) {
+      return new Date(date?.split(" ")[0].split(":").join("-")).getMonth() + 1;
+    },
+    async queryImgesAfterFetch(dateTaken, type) {
+      const yearTaken = this.getYearTaken(dateTaken);
+      const monthTaken = this.getMonthTaken(dateTaken);
+      const allImages = JSON.parse(localStorage.getItem("allImages"));
+      let imagesAfterFilter = [];
+      if (!dateTaken) {
+        console.log(allImages);
+        imagesAfterFilter = [...allImages];
+      } else {
+        if (dateTaken !== "undefined") {
+          if (type === "year") {
+            allImages.map((item) => {
+              const year = this.getYearTaken(item?.dateTaken);
+              if (year === yearTaken) {
+                imagesAfterFilter.push(item);
+              }
+            });
+          } else if (type === "month") {
+            allImages.map((item) => {
+              const month = this.getMonthTaken(item?.dateTaken);
+              const year = this.getYearTaken(item?.dateTaken);
+              if (month === monthTaken && year === yearTaken) {
+                imagesAfterFilter.push(item);
+              }
+            });
+          } else {
+            imagesAfterFilter = [...allImages];
+          }
+        } else {
+          if (type === "year") {
+            allImages.map((item) => {
+              const year = this.getYearTaken(item?.dateTaken);
+              if (isNaN(year) && isNaN(yearTaken)) {
+                imagesAfterFilter.push(item);
+              }
+            });
+          } else if (type === "month") {
+            allImages.map((item) => {
+              const month = this.getMonthTaken(item?.dateTaken);
+              const year = this.getYearTaken(item?.dateTaken);
+              if (
+                isNaN(month) &&
+                isNaN(year) &&
+                isNaN(monthTaken) &&
+                isNaN(yearTaken)
+              ) {
+                imagesAfterFilter.push(item);
+              }
+            });
+          } else {
+            imagesAfterFilter = [...allImages];
+          }
+        }
+      }
+
+      this.images = [...imagesAfterFilter];
+      await this.getActualImg(imagesAfterFilter[0].fileId);
+      this.updateSwipers();
+    },
+    convertNumberToMonth(monthNumber) {
+      var monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      return monthNames[Number(monthNumber) - 1];
+    },
+    buildObjForMonthLevel(Obj) {
+      const result = [];
+      for (const [key, value] of Object.entries(
+        groupBy(Obj, (item) => item?.monthTaken)
+      )) {
+        result.push({
+          name: this.convertNumberToMonth(key),
+          id: key,
+          type: "month",
+          dateTaken: value && value.length ? value[0].dateTaken : "undefined",
+          pid: 2,
+          amount: value && value?.length ? value?.length : 0,
+        });
+      }
+      return result;
+    },
+    buildObjForYearLevel(Obj) {
+      const result = [];
+      for (const [key, value] of Object.entries(Obj)) {
+        const x = {
+          name: key,
+          id: key,
+          type: "year",
+          pid: 1,
+          dateTaken: value && value.length ? value[0].dateTaken : "undefined",
+          amount: value && value.length ? value.length : 0,
+          children: this.buildObjForMonthLevel(value),
+        };
+        result.push(x);
+      }
+      return result;
+    },
+    getDataSidebar(data) {
+      const dataSample = data?.map((item) => {
+        return {
+          thumbnailUrl: item.thumbnailUrl,
+          dateTaken: item.exif.DateTimeOriginal
+            ? item.exif.DateTimeOriginal
+            : "undefined",
+          fileId: item.fileId,
+          yearTaken: item?.exif?.DateTimeOriginal
+            ? new Date(
+                item?.exif?.DateTimeOriginal?.split(" ")[0].split(":").join("-")
+              ).getFullYear()
+            : "undefined",
+          monthTaken: item?.exif?.DateTimeOriginal
+            ? new Date(
+                item?.exif?.DateTimeOriginal?.split(" ")[0].split(":").join("-")
+              ).getMonth() + 1
+            : "undefined",
+        };
+      });
+      const objInYearLevel = groupBy(dataSample, (item) => item.yearTaken);
+      const result = this.buildObjForYearLevel(objInYearLevel);
+      const ObjReturn = [
+        {
+          name: this.folderName,
+          amount: dataSample.length,
+          type: "all",
+          id: 0,
+          pid: 0,
+          children: result,
+        },
+      ];
+      return ObjReturn;
     },
 
     async getActualImg(fileId) {
@@ -303,5 +477,9 @@ a:hover {
 
 .round {
   border-radius: 50%;
+}
+.swiper-wrapper {
+  display: flex;
+  justify-content: center;
 }
 </style>

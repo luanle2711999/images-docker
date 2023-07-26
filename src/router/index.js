@@ -1,7 +1,8 @@
 import VueRouter from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import ImagesView from "../views/ImagesView.vue";
+import FolderTreeList from "../views/ViewTreeList/FolderTreeList.vue";
 import ListFolder from "../views/ListingFolder/ListFolder.vue";
+import ImagesViewVue from "../views/ImagesView.vue";
 const routes = [
   {
     path: "/",
@@ -13,7 +14,7 @@ const routes = [
   // {
   //   path: "/images",
   //   name: "ComponentName",
-  //   component: ImagesView,
+  //   component: ImagesViewVue,
   // },
   {
     path: "/folders",
