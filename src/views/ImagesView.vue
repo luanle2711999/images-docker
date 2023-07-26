@@ -1,7 +1,7 @@
 <template>
   <div id="content" class="app-snextcloud">
     <NcAppNavigation>
-      <button @click="$emit('goBackward')">Back</button>
+      <button @click="$emit('goBackward')" class="btn-back">Back</button>
       <FolderTreeList
         :dataSource="dataSoureSidebar"
         test="dsfksdhfkjds"
@@ -478,8 +478,11 @@ a:hover {
 .round {
   border-radius: 50%;
 }
-.swiper-wrapper {
+/* .swiper-wrapper {
   display: flex;
   justify-content: center;
+} */
+.btn-back {
+  margin-left: 5px;
 }
 </style>

@@ -27,7 +27,7 @@
               {{ slotProps?.model?.name || "undefined" }} ({{
                 slotProps?.model?.amount
               }}
-              items)
+              {{ slotProps?.model?.amount > 1 ? "items" : "item" }})
             </div>
           </template>
           <template v-slot:addTreeNodeIcon="slotProps">

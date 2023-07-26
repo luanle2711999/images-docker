@@ -28,14 +28,27 @@
     <!-- </NcAppNavigation> -->
     <NcAppContent>
       <div class="file-container">
-        <button @click="goBack" :disabled="!this.currentPath">back</button>
-        <button
-          @click="goForward"
-          :disabled="this.forwardPath === this.currentPath"
-        >
-          forward
-        </button>
-        <b-breadcrumb :items="paths"></b-breadcrumb>
+        <div class="btn-container">
+          <button @click="goBack" :disabled="!this.currentPath">back</button>
+          <button
+            @click="goForward"
+            :disabled="this.forwardPath === this.currentPath"
+          >
+            forward
+          </button>
+          <button
+            @click="showImges()"
+            v-if="checkFolderIncludeImg(directories)"
+          >
+            Live show
+          </button>
+        </div>
+        <div class="breadcrumb-path">
+          <div class="star-container">
+            <b-icon icon="star" class="icon-star"></b-icon>
+          </div>
+          <b-breadcrumb :items="paths"></b-breadcrumb>
+        </div>
         <b-table
           :fields="fields"
           :items="directories"
@@ -62,9 +75,6 @@
             >
           </template>
         </b-table>
-        <button @click="showImges()" v-if="checkFolderIncludeImg(directories)">
-          Live show
-        </button>
       </div>
     </NcAppContent>
   </div>
@@ -85,6 +95,7 @@ import { NcModal, NcButton, NcTextField } from "@nextcloud/vue";
 import { createClient } from "webdav";
 import { generateRemoteUrl } from "@nextcloud/router";
 import { getCurrentUser, getRequestToken } from "@nextcloud/auth";
+import star from "../../common/star.vue";
 import { router } from "../../router";
 import "@nextcloud/dialogs/styles/toast.scss";
 import HomeView from "../HomeView.vue";
@@ -350,5 +361,32 @@ textarea {
 .upload {
   margin-top: 20px;
   border: none;
+}
+.breadcrumb-path {
+  border: 1px solid #ededed;
+  margin-bottom: 30px;
+  height: 30px;
+  display: flex;
+}
+.icon-star {
+  color: #0d6efd;
+}
+.breadcrumb {
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+.star-container {
+  width: 30px;
+  height: 30px;
+  border: 0.5px solid #ededed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px;
+}
+.btn-container {
+  display: flex;
+  margin-bottom: 30px;
 }
 </style>
