@@ -1,7 +1,9 @@
 <template>
   <div id="content" class="app-snextcloud">
     <NcAppNavigation>
-      <button @click="$emit('goBackward')" class="btn-back">Back</button>
+      <button @click="$emit('goBackward')" class="btn-back">
+        Choose other folder
+      </button>
       <FolderTreeList
         :dataSource="dataSoureSidebar"
         test="dsfksdhfkjds"
@@ -150,16 +152,20 @@ export default {
     getMonthTaken(date) {
       return new Date(date?.split(" ")[0].split(":").join("-")).getMonth() + 1;
     },
+    getDayTaken(date) {
+      return new Date(date?.split(" ")[0].split(":").join("-")).getDay();
+    },
     async queryImgesAfterFetch(dateTaken, type) {
       const yearTaken = this.getYearTaken(dateTaken);
       const monthTaken = this.getMonthTaken(dateTaken);
+      const dayTaken = this.getDayTaken(dateTaken);
       const allImages = JSON.parse(localStorage.getItem("allImages"));
       let imagesAfterFilter = [];
       if (!dateTaken) {
         console.log(allImages);
         imagesAfterFilter = [...allImages];
       } else {
-        if (dateTaken !== "undefined") {
+        if (dateTaken !== "Unknown Date") {
           if (type === "year") {
             allImages.map((item) => {
               const year = this.getYearTaken(item?.dateTaken);
@@ -175,6 +181,19 @@ export default {
                 imagesAfterFilter.push(item);
               }
             });
+          } else if (type === "day") {
+            allImages.map((item) => {
+              const month = this.getMonthTaken(item?.dateTaken);
+              const year = this.getYearTaken(item?.dateTaken);
+              const day = this.getDayTaken(item?.dateTaken);
+              if (
+                month === monthTaken &&
+                year === yearTaken &&
+                day === dayTaken
+              ) {
+                imagesAfterFilter.push(item);
+              }
+            });
           } else {
             imagesAfterFilter = [...allImages];
           }
@@ -183,19 +202,6 @@ export default {
             allImages.map((item) => {
               const year = this.getYearTaken(item?.dateTaken);
               if (isNaN(year) && isNaN(yearTaken)) {
-                imagesAfterFilter.push(item);
-              }
-            });
-          } else if (type === "month") {
-            allImages.map((item) => {
-              const month = this.getMonthTaken(item?.dateTaken);
-              const year = this.getYearTaken(item?.dateTaken);
-              if (
-                isNaN(month) &&
-                isNaN(year) &&
-                isNaN(monthTaken) &&
-                isNaN(yearTaken)
-              ) {
                 imagesAfterFilter.push(item);
               }
             });
@@ -235,9 +241,11 @@ export default {
           name: this.convertNumberToMonth(key),
           id: key,
           type: "month",
-          dateTaken: value && value.length ? value[0].dateTaken : "undefined",
+          dateTaken:
+            value && value.length ? value[0].dateTaken : "Unknown Date",
           pid: 2,
           amount: value && value?.length ? value?.length : 0,
+          children: this.buildObjForDayLevel(value),
         });
       }
       return result;
@@ -245,16 +253,47 @@ export default {
     buildObjForYearLevel(Obj) {
       const result = [];
       for (const [key, value] of Object.entries(Obj)) {
-        const x = {
+        if (key !== "Unknown Date") {
+          const x = {
+            name: key,
+            id: key,
+            type: "year",
+            pid: 1,
+            dateTaken:
+              value && value.length ? value[0].dateTaken : "Unknown Date",
+            amount: value && value.length ? value.length : 0,
+            children: this.buildObjForMonthLevel(value),
+          };
+          result.push(x);
+        } else {
+          const x = {
+            name: key,
+            id: key,
+            type: "year",
+            pid: 1,
+            dateTaken:
+              value && value.length ? value[0].dateTaken : "Unknown Date",
+            amount: value && value.length ? value.length : 0,
+          };
+          result.push(x);
+        }
+      }
+      return result;
+    },
+    buildObjForDayLevel(Obj) {
+      const result = [];
+      for (const [key, value] of Object.entries(
+        groupBy(Obj, (item) => item?.dayTaken)
+      )) {
+        result.push({
           name: key,
           id: key,
-          type: "year",
-          pid: 1,
-          dateTaken: value && value.length ? value[0].dateTaken : "undefined",
-          amount: value && value.length ? value.length : 0,
-          children: this.buildObjForMonthLevel(value),
-        };
-        result.push(x);
+          type: "day",
+          dateTaken:
+            value && value.length ? value[0].dateTaken : "Unknown Date",
+          pid: 3,
+          amount: value && value?.length ? value?.length : 0,
+        });
       }
       return result;
     },
@@ -264,18 +303,23 @@ export default {
           thumbnailUrl: item.thumbnailUrl,
           dateTaken: item.exif.DateTimeOriginal
             ? item.exif.DateTimeOriginal
-            : "undefined",
+            : "Unknown Date",
           fileId: item.fileId,
           yearTaken: item?.exif?.DateTimeOriginal
             ? new Date(
                 item?.exif?.DateTimeOriginal?.split(" ")[0].split(":").join("-")
               ).getFullYear()
-            : "undefined",
+            : "Unknown Date",
           monthTaken: item?.exif?.DateTimeOriginal
             ? new Date(
                 item?.exif?.DateTimeOriginal?.split(" ")[0].split(":").join("-")
               ).getMonth() + 1
-            : "undefined",
+            : "Unknown Date",
+          dayTaken: item?.exif?.DateTimeOriginal
+            ? new Date(
+                item?.exif?.DateTimeOriginal?.split(" ")[0].split(":").join("-")
+              ).getDay()
+            : "Unknown Date",
         };
       });
       const objInYearLevel = groupBy(dataSample, (item) => item.yearTaken);

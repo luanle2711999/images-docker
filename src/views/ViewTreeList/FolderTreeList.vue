@@ -24,7 +24,7 @@
         >
           <template v-slot:leafNameDisplay="slotProps">
             <div>
-              {{ slotProps?.model?.name || "undefined" }} ({{
+              {{ slotProps?.model?.name || "Unknown Date" }} ({{
                 slotProps?.model?.amount
               }}
               {{ slotProps?.model?.amount > 1 ? "items" : "item" }})
