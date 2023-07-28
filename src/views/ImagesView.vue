@@ -9,6 +9,16 @@
         test="dsfksdhfkjds"
         v-on:queryImgesAfterFetch="queryImgesAfterFetch"
       />
+      <button
+        @click="
+          () => {
+            setLiveShow ? liveShow('show') : liveShow('stop');
+          }
+        "
+        class="btn-back"
+      >
+        {{ liveShowTxt }}
+      </button>
     </NcAppNavigation>
     <NcAppContent>
       <div>
@@ -102,6 +112,9 @@ export default {
       styleSlide: null,
       selectedKey: null,
       actualImg: "",
+      liveShowTxt: "",
+      setLiveShow: true,
+      interval: null,
     };
   },
   props: ["fileId", "folderName"],
@@ -134,9 +147,7 @@ export default {
           this.sortImg(urls);
           await this.getActualImg(urls[0].fileId);
           this.images = [...urls];
-          // this.swiper.slideTo(urls[0].key);
-          // this.swiper2.slideTo(urls[0].key);
-          // this.updateSwipers();
+          this.selectedKey = urls[0].key;
           localStorage.setItem("allImages", JSON.stringify(this.images));
         })
         .catch((error) => {
@@ -250,6 +261,19 @@ export default {
       }
       return result;
     },
+    liveShow(type) {
+      if (type === "show") {
+        this.liveShowTxt = "Stop Live Show";
+        this.setLiveShow = false;
+        this.interval = setInterval(() => {
+          this.changeSlide(this.selectedKey + 1, this.selectedKey + 1, "next");
+        }, 2000);
+      } else {
+        this.setLiveShow = true;
+        this.liveShowTxt = "Live Show";
+        clearInterval(this.interval);
+      }
+    },
     buildObjForYearLevel(Obj) {
       const result = [];
       for (const [key, value] of Object.entries(Obj)) {
@@ -358,20 +382,23 @@ export default {
 
     changeSlide(index, key, fileId) {
       if (isNaN(fileId)) {
-        this.images.find((item) => {
-          if (item.key === key) {
-            fileId === "next"
-              ? (this.selectedKey += 1)
-              : (this.selectedKey -= 1);
-            this.swiper.slideTo(key);
-            this.getActualImg(item.fileId);
-          }
-        });
+        const selectedItem = this.images.find((item) => item.key === key);
+        if (selectedItem) {
+          fileId === "next" ? (this.selectedKey += 1) : (this.selectedKey -= 1);
+
+          this.swiper.slideTo(key);
+          this.getActualImg(selectedItem.fileId);
+        } else {
+          this.selectedKey = this.images[0].key;
+          this.swiper.slideTo(this.selectedKey);
+          this.getActualImg(this.images[0].fileId);
+        }
       } else {
         this.getActualImg(fileId);
         this.selectedKey = key;
       }
       // this.swiper2.slideTo(index);
+      this.updateSwipers();
     },
     updateSwipers() {
       this.swiper2.update();
@@ -381,6 +408,7 @@ export default {
 
   async mounted() {
     this.loading = false;
+    this.liveShowTxt = "Live Show";
     this.getAllImages().then(() => {
       this.$nextTick(() => {
         console.log(document.querySelectorAll(".swiper-slide"));

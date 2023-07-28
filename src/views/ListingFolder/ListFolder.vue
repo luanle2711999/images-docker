@@ -40,7 +40,7 @@
             @click="showImges()"
             v-if="checkFolderIncludeImg(directories)"
           >
-            Live show
+            Show
           </button>
         </div>
         <div class="breadcrumb-path">
